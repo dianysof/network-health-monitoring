@@ -386,15 +386,22 @@ function App() {
       <div className="app-main">
         <header className="app-header">
           <div>
-            <h1 className="app-title">Network Health Dashboard</h1>
+            <p className="app-eyebrow">FastAPI · Kubernetes · React</p>
+
+            <h1 className="app-title app-title-gradient">
+              Network Health Dashboard
+            </h1>
+
             <p className="app-subtitle">
-              Monitor endpoint uptime, latency & alerts in real time.
+              Track endpoint uptime, latency trends and smart alerts in real time.
             </p>
           </div>
+
           <button className="button secondary" onClick={logout}>
             Logout
           </button>
         </header>
+
 
         {/* NEW ENDPOINT */}
         <section className="section">

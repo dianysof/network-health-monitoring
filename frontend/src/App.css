@@ -268,3 +268,27 @@ tbody tr:hover {
 .form-input[type="number"] {
   -moz-appearance: textfield;
 }
+
+/* ======= DASHBOARD HEADER EXTRAS ======= */
+
+.app-eyebrow {
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 0.35rem;
+}
+
+.app-title-gradient {
+  background: linear-gradient(120deg, #38bdf8, #22c55e);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.app-subtitle {
+  margin-top: 0.35rem;
+  font-size: 0.95rem;
+  color: #cbd5e1;
+}
+
