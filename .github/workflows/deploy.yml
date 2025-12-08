@@ -3,7 +3,7 @@ name: CI/CD to DigitalOcean Kubernetes
 on:
   push:
     branches:
-      - main  # Ejecuta el pipeline cuando haces push a main
+      - main
 
 env:
   REGISTRY: registry.digitalocean.com/network-health-registry
@@ -15,56 +15,46 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Descargar el código
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Instalar DOCTL para login al registry y al cluster
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
         with:
           token: ${{ secrets.DO_ACCESS_TOKEN }}
 
-      # 3. Login al Container Registry (DOCR)
       - name: Authenticate with DOCR
         run: doctl registry login --expiry-seconds 600
 
-      # 4. Build + Push API image
       - name: Build and push API image
         run: |
           docker build -t $REGISTRY/api:${IMAGE_TAG} ./backend
           docker push $REGISTRY/api:${IMAGE_TAG}
 
-      # 5. Build + Push Frontend image
       - name: Build and push Frontend image
         run: |
           docker build -t $REGISTRY/frontend:${IMAGE_TAG} ./frontend
           docker push $REGISTRY/frontend:${IMAGE_TAG}
 
-      # 6. Build + Push Worker image
       - name: Build and push Worker image
         run: |
           docker build -t $REGISTRY/worker:${IMAGE_TAG} ./worker
           docker push $REGISTRY/worker:${IMAGE_TAG}
 
-      # 7. Instalar kubectl
       - name: Install kubectl
         uses: azure/setup-kubectl@v4
 
-      # 8. Crear archivo kubeconfig usando secret 'KUBE_CONFIG'
       - name: Configure KUBECONFIG
         run: |
           mkdir -p ~/.kube
           echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
 
-      # 9. Actualizar las imágenes de los deployments
       - name: Deploy new images to Kubernetes
         run: |
           kubectl set image deployment/api api=$REGISTRY/api:${IMAGE_TAG} -n $NAMESPACE
           kubectl set image deployment/frontend frontend=$REGISTRY/frontend:${IMAGE_TAG} -n $NAMESPACE
           kubectl set image deployment/worker worker=$REGISTRY/worker:${IMAGE_TAG} -n $NAMESPACE
 
-          # Opcional: espera a que los rollouts terminen correctamente
           kubectl rollout status deployment/api -n $NAMESPACE
           kubectl rollout status deployment/frontend -n $NAMESPACE
           kubectl rollout status deployment/worker -n $NAMESPACE
