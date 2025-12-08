@@ -33,13 +33,17 @@ The goal of this project is to address that gap by developing a lightweight, clo
 This project is also a way to connect my professional background (network design and performance) with the core technologies of the course: Docker, Kubernetes, PostgreSQL, and cloud deployment on DigitalOcean. Rather than building a toy example, I wanted a project that I would genuinely use to monitor my own lab endpoints and that could be extended later (e.g., email notifications, predictive alerts, or more advanced analytics).
 ## **3. Objectives**
 This project was designed with two complementary sets of goals: those directed toward the end-user experience, and those focused on the technical implementation and cloud-native requirements.
+
 **3.1 User-Facing Objectives**
+
 From the perspective of an end user, the system should provide a secure and intuitive experience for monitoring web services. Users must be able to register an account, authenticate, and manage only the endpoints that belong to them. Once authenticated, they should be presented with a clean dashboard interface through which they can add, edit, and delete HTTP endpoints while easily viewing the most recent status and latency of each one. The interface should also allow users to manually trigger endpoint checks on demand.
 
 Beyond the immediate status, the application should offer rich insights into historical performance through a detailed endpoint view. This includes access to measurement history, a 24-hour latency visualization using a line chart, and discovery of aggregated statistics such as uptime percentage and average latency. Because service health can fluctuate over time, each user must be able to configure alert conditions for every endpoint, specifying thresholds for latency and for consecutive failures. The application should also maintain and display a timeline of alert events so that users can understand when and why alerts were triggered.
 
 Finally, the system should remain accessible in both local and cloud environments. Users should be able to run the application locally using Docker Compose or access it through its cloud deployment on DigitalOcean Kubernetes, without needing deep knowledge of cluster operations or infrastructure tools.
+
 **3.2 Technical Objectives**
+
 From a technical standpoint, the project aims to serve as a practical demonstration of modern, cloud-native architectural principles. The system adopts Docker and Docker Compose to support a multi-service development environment composed of a FastAPI backend, a worker service, a frontend application, and a PostgreSQL database.
 
 Persistent storage is a core requirement: PostgreSQL must retain state across container restarts and redeployments, ensuring that user accounts, endpoints, measurements, and alerts are durable. The backend exposes a RESTful API with JWT-based authentication, password hashing, and full CRUD functionality for endpoints, in addition to endpoints for ingesting and retrieving measurements as well as computing uptime statistics and alert configurations.
@@ -47,7 +51,9 @@ Persistent storage is a core requirement: PostgreSQL must retain state across co
 A separate worker service is responsible for continuously checking registered endpoints in the background, recording results in the database, and applying the alert logic. All components are deployed to DigitalOcean Kubernetes using Deployments and Services to ensure modularity and scalability, with a dedicated PersistentVolumeClaim providing reliable database storage. Namespaces and Secrets are used to isolate and configure the environment securely.
 
 Monitoring and observability play an important role in validating system behavior. Infrastructure-level visibility is provided through DigitalOcean’s built-in metrics (CPU, RAM, storage, and pod restarts), while application-level monitoring is exposed directly within the dashboard through calculated uptime, latency trends, and alert state. To satisfy advanced course requirements, the system also incorporates two higher-level features: a robust JWT-based security layer and an automated CI/CD workflow using GitHub Actions to build container images for deployment to the DigitalOcean Container Registry.
+
 ## **4. Technical Stack**
+
 The platform is implemented as a small, cloud-native system composed of four cooperating services:
 
 - **FastAPI backend**: which exposes a REST API with JWT authentication and provides all user-facing data operations.
@@ -56,7 +62,9 @@ The platform is implemented as a small, cloud-native system composed of four coo
 - **PostgreSQL database**: which stores all durable state, including users, endpoints, measurements, and alerts.
 
 All services are containerized using Docker and orchestrated through Kubernetes on DigitalOcean Kubernetes (DOKS). Image artifacts are stored in the DigitalOcean Container Registry, while persistent state is backed by a Kubernetes PersistentVolumeClaim using DigitalOcean Block Storage.
+
 **4.1 Orchestration Layer: Kubernetes on DigitalOcean**
+
 Kubernetes was selected as the orchestration framework (instead of Docker Swarm) to provide declarative deployments, automated rollouts, service discovery, and persistent storage integrations.
 
 The deployment structure includes:
@@ -68,23 +76,31 @@ The deployment structure includes:
 - A Frontend Deployment exposed externally via a LoadBalancer/NodePort Service.
 
 Each service receives configuration via Kubernetes environment variables (e.g., database credentials, polling intervals), allowing identical images to run seamlessly in both local and cloud contexts. Kubernetes manages pod placement, scaling, and restart behavior, ensuring the system remains modular and resilient.
+
 **4.2 Backend API: FastAPI, JWT Security, and Direct SQL Access**
+
 The backend is implemented in FastAPI, chosen for its performance, simplicity, and strong typing. It provides all core application functionality:
+
 **Authentication and Access Control**
+
 - JWT authentication using python-jose and OAuth2PasswordBearer.
 - Password hashing with passlib (PBKDF2-SHA256).
 - Signed tokens include user identifiers and expiration timestamps.
 - A shared dependency (get\_current\_user) validates tokens and enforces per-user resource isolation.
 
 This mechanism ensures that users can only access their own endpoints and monitoring data.
+
 **Database Interaction**
+
 The backend uses psycopg with dict\_row to return rows as Python dictionaries.\
 Connection parameters are provided via environment variables:
 
 DB\_HOST, DB\_PORT, DB\_NAME, DB\_USER, DB\_PASSWORD
 
 The lightweight “connection-per-request” design is appropriate for the project’s scale and keeps data access explicit. No ORM is used, giving full transparency over SQL execution.
+
 **API Structure**
+
 The backend supports:
 
 - User management (/signup, /login)
@@ -95,9 +111,13 @@ The backend supports:
 - Alert configuration and alert history
 
 A /healthz endpoint enables Kubernetes to perform liveness/readiness checks.
+
 **4.3 Background Worker: Continuous Monitoring and Alert Evaluation**
+
 The worker is a standalone Python service running in its own Deployment. It implements the background logic for health monitoring:
+
 **Runtime Behavior**
+
 Every polling cycle (default: 60 seconds), the worker:
 
 1. Fetches all registered endpoints and alert settings from PostgreSQL.
@@ -106,7 +126,9 @@ Every polling cycle (default: 60 seconds), the worker:
 1. Updates alert state based on latency thresholds and consecutive failures.
 1. Generates alert records when conditions are met.
 1. Commits the transaction and sleeps until the next cycle.
+
 **Alert Logic**
+
 Alerts are triggered under two conditions:
 
 - **Consecutive failures**: exceeding consecutive\_fail\_threshold
@@ -114,7 +136,9 @@ Alerts are triggered under two conditions:
 
 Alerts remain active until the endpoint returns to a healthy state.\
 This stateful logic is stored directly in the endpoints table to maintain consistency across worker restarts.
+
 **4.4 Database Layer: PostgreSQL with Durable Storage**
+
 PostgreSQL stores all persistent application data across four core tables:
 
 - users (accounts and password hashes)
@@ -126,7 +150,9 @@ In local development, persistence is handled with a Docker volume and init.sql�
 In Kubernetes, a **PersistentVolumeClaim** ensures data durability across pod restarts and redeployments.
 
 This schema-first, explicit-SQL approach keeps the system transparent and easy to extend.
+
 **4.5 Frontend: React, Vite, and Chart.js**
+
 The frontend is implemented as a React single-page application powered by Vite for rapid iteration and optimized builds. Its responsibilities include:
 
 - User authentication and token storage.
@@ -137,7 +163,9 @@ The frontend is implemented as a React single-page application powered by Vite f
 - Managing alert configuration inputs.
 
 The UI emphasizes clarity and mirrors the structure of real monitoring dashboards.
+
 **4.6 Containerization and Local Development: Docker & Compose**
+
 Local development uses Docker Compose, which orchestrates:
 
 - api (FastAPI backend)
@@ -147,7 +175,9 @@ Local development uses Docker Compose, which orchestrates:
 
 All services share a consistent environment variable model with the Kubernetes deployment.\
 This makes local testing predictable and mirrors production conditions closely.
+
 **4.7 Cloud Platform and Monitoring: DigitalOcean**
+
 The production deployment runs entirely on DigitalOcean:
 
 - DigitalOcean Kubernetes (DOKS) hosts the cluster.
@@ -245,12 +275,12 @@ These features directly satisfy course requirements for Docker, PostgreSQL, pers
 
 # **6.  User Guide**
 This section explains how a user interacts with the Network Health Dashboard, from logging in to monitoring uptime, reviewing historical data, and configuring smart alerts. The application is available online at:  [**http://209.38.10.37**](http://209.38.10.37/)
+
 **6.1. Accessing the Application**
+
 Open any modern browser (Chrome, Edge, Firefox, Safari) and navigate to: <http://209.38.10.37>
 
-![A screenshot of a computer&#x0A;&#x0A;AI-generated content may be incorrect.](Aspose.Words.610d5a1f-f79a-4cba-bd4a-489d762d51d3.001.png)
-
-<IMAGEN DE LOGIN>
+![Login Screen](images/PictureLogin.png)
 
 **6.2. Creating an Account (Sign Up)**
 
@@ -261,14 +291,18 @@ New users may register for an account directly from the login page:
 1. Click **Create**.
 
 The frontend submits the credentials to the /signup endpoint. Upon successful registration, the backend issues a JSON Web Token (JWT), which is stored in the browser’s localStorage. Users are then redirected automatically to the dashboard.
+
 **6.3. Logging In**
+
 Existing users authenticate by providing their credentials on the login form:
 
 1. Enter email and password.
 1. Click **Login**.
 
 If the credentials are valid, the backend returns a JWT and the dashboard loads. Invalid credentials produce a clear error message. The stored token is attached automatically to all subsequent authenticated API requests.
+
 **6.4. Main Dashboard Overview**
+
 After logging in, you land on the Network Health Dashboard**.**
 
 The dashboard contains:
@@ -278,12 +312,13 @@ The dashboard contains:
 - A table listing all your endpoints.
 - A Summary section showing the latest health status and latency.
 
-<IMAGEN 1 DE DASHBOARD>
 
-<IMAGEN 2 DE DASHBOARD>
+![Dashboard1 Screen](images/PictureDashboard1.png)
+![Dashboard2 Screen](images/PictureDashboard2.png)
 
-![A screenshot of a dashboard&#x0A;&#x0A;AI-generated content may be incorrect.](Aspose.Words.610d5a1f-f79a-4cba-bd4a-489d762d51d3.002.png)![A screenshot of a computer&#x0A;&#x0A;AI-generated content may be incorrect.](Aspose.Words.610d5a1f-f79a-4cba-bd4a-489d762d51d3.003.png)
+
 **6.5. Adding a New Endpoint**
+
 To begin monitoring a website or service:
 
 1. In the **Add new endpoint** section, enter:
@@ -292,7 +327,9 @@ To begin monitoring a website or service:
 1. Click **Add**.
 
 Your new endpoint appears immediately in the list and summary.
+
 **6.6. Viewing Your Endpoint List**
+
 The **Your endpoints** section shows all endpoints you own.
 
 Columns include:
@@ -302,13 +339,18 @@ Columns include:
 - URL
 - Creation Timestamp
 - Actions (Measure, Delete, Details)
+
 **Actions:**
+
 - ***Measure:*** Triggers an immediate health check via */api/endpoints/{id}/measure.*
 - ***Delete:*** Removes an endpoint permanently.
 - ***Details:*** Opens the detailed monitoring view (history, stats, alerts).
-***<IMAGEN DE ENDPOINTS TABLE>***
+
+![Endpoint Screen](images/Endpoints.png)
+
 
 **6.7. Summary View: Real-Time Status**
+
 The **Summary** table uses /api/endpoints/summary to display:
 
 - Name & URL
@@ -321,17 +363,13 @@ A color-coded badge indicates the state:
 - 🟢 **UP**
 - 🔴 **ALERT**
 
-***<IMAGEN DE SUMARY TABLE>***
-
-![A screenshot of a computer&#x0A;&#x0A;AI-generated content may be incorrect.](Aspose.Words.610d5a1f-f79a-4cba-bd4a-489d762d51d3.005.png)
+![Summary Screen](images/Summary.png)
 
 **6.8. Opening the Detailed View**
 
 Click **Details** on any endpoint to open the full monitoring panel.
 
-***<IMAGEN DE DETAILS>***
-
-![A screenshot of a graph&#x0A;&#x0A;AI-generated content may be incorrect.](Aspose.Words.610d5a1f-f79a-4cba-bd4a-489d762d51d3.006.png)
+![Detailed Screen](images/DetailedView.png)
 
 The detailed view contains:
 
@@ -340,7 +378,9 @@ The detailed view contains:
 1. Latency line chart
 1. Measurement history table
 1. Recent alerts table
+
 **6.9. Uptime & Latency Statistics**
+
 At the top of the detailed view, the app displays:
 
 - Uptime %
@@ -349,7 +389,9 @@ At the top of the detailed view, the app displays:
 - Window duration (default 24h)
 
 Data comes from: /api/endpoints/{id}/stats?hours=24
+
 **6.10. Configuring Alerts**
+
 Alerts are fully customizable per endpoint.
 
 You can configure:
@@ -364,7 +406,9 @@ You also see:
 - Timestamp of last alert
 
 Updating the configuration calls: PUT /api/endpoints/{id}/alert-config
+
 **6.11. Latency Visualization (Chart.js)**
+
 A detailed latency trend graph is presented using **Chart.js**, showing:
 
 - Time on the horizontal axis
@@ -383,10 +427,10 @@ Below the chart, users see the raw measurement data:
 
 This enables debugging and correlation with incidents.
 
-***<IMAGEN DE HISTORY TABLE>***
+![History Screen](images/HistoryTable.png)
 
-![A screenshot of a computer&#x0A;&#x0A;AI-generated content may be incorrect.](Aspose.Words.610d5a1f-f79a-4cba-bd4a-489d762d51d3.007.png)
 **6.13. Alert History**
+
 If alerts have been triggered for the endpoint, they appear at the bottom of the page:
 
 - When the alert happened
@@ -394,10 +438,10 @@ If alerts have been triggered for the endpoint, they appear at the bottom of the
 - Message
 - Optional numeric value (latency exceeded)
 
-***<IMAGEN DE ALERT SUMMARY TABLE>***
+![Alerts Screen](images/AlertsSummary.png)
 
-## ![A screenshot of a computer&#x0A;&#x0A;AI-generated content may be incorrect.](Aspose.Words.610d5a1f-f79a-4cba-bd4a-489d762d51d3.008.png)
 **6.14. Logging Out**
+
 Click **Logout** on the top-right to:
 
 - Remove your token from localStorage
@@ -414,7 +458,9 @@ Click **Logout** on the top-right to:
 1. Configure alerts for latency or downtime.
 1. Monitor alert history and system behavior over time.
 1. Log out anytime.
+   
 ## **7. Development Guide**
+
 This section explains how to set up the development environment, including the application services, database, storage, and local testing workflow. The recommended way to run the project locally is via Docker Compose**,** which closely mirrors the Kubernetes deployment.
 
 **7.1 Prerequisites**
@@ -431,11 +477,10 @@ These tools allow the project to be executed via container orchestration or thro
 
 
 **7.2. Repository Structure (High-Level)**
+
 A typical layout for the project:
 
-***<IMAGEN DE REPOSITORYTABLE>***
-
-![A screenshot of a computer&#x0A;&#x0A;AI-generated content may be incorrect.](Aspose.Words.610d5a1f-f79a-4cba-bd4a-489d762d51d3.009.png)
+![Repository Screen](images/Repository.png)
 
 - backend/ contains the FastAPI application.
 - worker/ contains the background monitoring loop.
@@ -446,9 +491,12 @@ A typical layout for the project:
 
 
 **7.3 Environment Configuration**
+
 Both the backend and worker read their configuration from environment variables.
 
+
 **Backend Configuration (FastAPI)**
+
 Key environment variables include:
 
 DB\_HOST
@@ -479,7 +527,10 @@ JWT\_SECRET\_KEY=some-local-secret
 
 These values determine database connectivity and authentication behavior.
 
+
+
 **Worker Configuration**
+
 From worker.py, the worker service uses:
 
 DB\_HOST
@@ -504,7 +555,10 @@ POLL\_INTERVAL\_SECONDS=60
 
 HTTP\_TIMEOUT\_SECONDS=5.0
 
+
+
 **Frontend Configuration**
+
 The frontend uses Vite’s environment variables:
 
 import.meta.env.VITE\_API\_BASE\_URL
@@ -521,6 +575,7 @@ This determines where the frontend sends API requests.
 
 
 **7.4. Local Development**
+
 Developers can test the full system locally using Docker Compose:
 
 1. Clone the repository.
@@ -539,6 +594,7 @@ Local execution allows developers to rapidly test authentication, endpoint confi
 **7.5 Local Testing Workflow**
 
 **7.5.1 Using the UI**
+
 1. Run docker compose up --build.
 1. Open the frontend (e.g., http://localhost:5173).
 1. Create an account and log in.
@@ -552,11 +608,12 @@ Local execution allows developers to rapidly test authentication, endpoint confi
    1. Alert history
 
 **7.5.2 Using FastAPI Interactive Docs**
+
 Navigate to: <http://localhost:8000/docs>
 
 From here, you can:
 
-- Test **/**signup, /login
+- Test /signup, /login
 - Authenticate using the Authorize button
 - Call protected endpoints:
   - /api/endpoints
@@ -568,6 +625,7 @@ From here, you can:
 This is useful for backend debugging without involving the UI.
 
 **7.5.3 Observing Worker Logs**
+
 docker compose logs -f worker
 
 Example output:
@@ -583,10 +641,12 @@ Example output:
 These logs confirm correct measurement and alert generation
 
 **7.6 Production Deployment Workflow**
+
 The system is designed primarily for Kubernetes deployment. DigitalOcean Kubernetes (DOKS) is used for production, following a declarative and repeatable deployment workflow.
 
 **Container Images**
-Each component (backend, worker, and frontend) is built as a Docker image and stored in th**e** DigitalOcean Container Registry (DOCR)**.** A GitHub Actions CI/CD pipeline automatically:
+
+Each component (backend, worker, and frontend) is built as a Docker image and stored in th**e** DigitalOcean Container Registry (DOCR). A GitHub Actions CI/CD pipeline automatically:
 
 - Builds images on each push to main
 - Tags them with the commit SHA
@@ -594,6 +654,7 @@ Each component (backend, worker, and frontend) is built as a Docker image and st
 
 
 **Kubernetes Manifests**
+
 The k8s/ directory includes manifests defining:
 
 - Deployments** for backend (replicated), worker, frontend, and PostgreSQL
@@ -607,6 +668,7 @@ kubectl apply -f k8s/ -n network-dashboard
 
 
 **Runtime Behavior in Production**
+
 - The API** runs as a replicated Deployment (2 pods) to improve availability.
 - The worker** runs continuously in a separate Deployment.
 - PostgreSQL** persists data on a Block Storage–backed PVC.
@@ -616,6 +678,7 @@ Operational visibility is provided through both DigitalOcean metrics (CPU, memor
 
 
 **7.7 Cloud Storage and Persistence**
+
 In production, PostgreSQL uses a PersistentVolumeClaim** attached to a DigitalOcean Block Storage volume. This ensures:
 
 - User data and measurements persist across pod restarts and rolling updates
@@ -626,6 +689,7 @@ This fulfills the project’s requirement for reliable, persistent storage.
 
 
 **7.8 Production Testing and Verification**
+
 Testing and verification in the cloud environment use:
 
 - kubectl logs for backend, worker, and frontend
@@ -637,11 +701,13 @@ This combination provides both infrastructure-level and application-level diagno
 
 
 ## **8. Deployment Information**
+
 This project is fully deployed on a DigitalOcean Kubernetes (DOKS) cluster, using container images stored in the DigitalOcean Container Registry (DOCR)** and automatically updated through a GitHub Actions CI/CD pipeline. The deployment mirrors modern cloud-native production environments by relying on Kubernetes for orchestration, scalability, and service isolation.
 
 All workloads run inside the dedicated namespace **network-dashboard**, and all manifests are defined declaratively in the **k8s/** directory of the repository.
 
 **8.1 Workloads Running in Production**
+
 The deployed system consists of four primary components:
 
 - **Api**: FastAPI backend (Deployment, 2 replicas)
@@ -653,6 +719,7 @@ Kubernetes Deployments, Services, Secrets, and PVCs collectively ensure that eac
 
 
 **8.2 Live Application URL**
+
 The application is publicly accessible at: [http://209.38.10.37](http://209.38.10.37/)
 
 This external address is automatically provisioned by DigitalOcean as part of the LoadBalancer Service exposing the frontend.
@@ -667,6 +734,7 @@ This separation ensures secure internal communication between services while exp
 
 
 **1. Applying Kubernetes Manifests**
+
 The entire application stack is deployed with a single command:
 
 kubectl apply -f k8s/ -n network-dashboard
@@ -684,6 +752,7 @@ This applies, in order:
 DigitalOcean then provisions a public IPv4 address for the frontend LoadBalancer.
 
 **2. Continuous Deployment with GitHub Actions**
+
 A full CI/CD pipeline, defined in .github/workflows/deploy.yml, automates build and deployment processes.
 
 Whenever new code is pushed to **main**, the pipeline performs:
@@ -722,6 +791,7 @@ kubectl rollout status deployment/worker -n network-dashboard
 This ensures that every commit triggers a complete rebuild, redeploy, and automated verification of the production environment.
 
 **8.4 Database Deployment & Persistent Storage**
+
 The PostgreSQL database runs as a Kubernetes Deployment backed by a PersistentVolumeClaim mapped to DigitalOcean Block Storage. This guarantees:
 
 - Durable storage for users, endpoints, measurements, and alerts
@@ -735,6 +805,7 @@ postgres.network-dashboard.svc.cluster.local
 ensuring secure, cluster-private communication.
 
 **8.5 Summary**
+
 The application is deployed as a fully cloud-native system using:
 
 - DigitalOcean Kubernetes (DOKS) for orchestration
