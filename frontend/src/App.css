@@ -1,0 +1,270 @@
+/* ======== SAFARI FIXES ======== */
+html, body {
+  background-color: #0b1120 !important;
+  color-scheme: only dark !important;
+}
+
+* {
+  -webkit-text-fill-color: initial; /* evita que Safari apague los colores */
+}
+
+/* ======== GENERAL LAYOUT ======== */
+
+.app-shell {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem;
+  color: #e5e7eb;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Card base */
+.app-login,
+.app-main {
+  background: #111827; /* SOLID background para Safari */
+  border-radius: 1rem;
+  padding: 2.2rem 2.5rem;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+/* HEADER */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.app-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #f1f5f9;    /* más claro */
+}
+
+.app-subtitle {
+  margin-top: 0.3rem;
+  font-size: 1rem;
+  color: #cbd5e1;
+}
+
+/* BUTTONS */
+.button {
+  border: none;
+  border-radius: 999px;
+  padding: 0.45rem 1.1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #0b1120;
+  font-weight: 600;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(34,197,94,0.35);
+}
+
+.button.secondary {
+  background: rgba(255,255,255,0.06);
+  color: #e2e8f0;
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+.button.secondary:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+/* LOGIN */
+.login-title {
+  font-size: 1.8rem;
+  margin-bottom: 0.3rem;
+  color: #f8fafc;
+}
+
+.login-subtitle {
+  margin-bottom: 1.4rem;
+  font-size: 0.95rem;
+  color: #cbd5e1;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  max-width: 350px;
+}
+
+.form-label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+  color: #e5e7eb;
+}
+
+.form-input {
+  padding: 0.55rem 0.7rem;
+  border-radius: 0.6rem;
+  border: 1px solid rgba(148,163,184,0.25);
+  background-color: #1e293b;
+  color: #f1f5f9;
+  font-size: 0.9rem;
+}
+
+.form-input::placeholder {
+  color: #64748b;
+}
+
+.form-input:focus {
+  outline: 2px solid #22c55e;
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+/* SECTIONS */
+.section {
+  margin-bottom: 2rem;
+}
+
+.section-title {
+  font-size: 1.3rem;
+  margin-bottom: 0.8rem;
+  color: #f1f5f9;
+}
+
+/* TABLE WRAPPER */
+.table-wrapper {
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid rgba(148,163,184,0.18);
+  background: #1e293b;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  color: #f1f5f9;
+}
+
+thead {
+  background: #0f172a;
+}
+
+th, td {
+  padding: 0.75rem 0.9rem;
+  border-bottom: 1px solid rgba(148,163,184,0.15);
+}
+
+tbody tr:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+/* STATUS BADGES */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.status-badge.up {
+  background: rgba(22,163,74,0.2);
+  color: #4ade80;
+}
+
+.status-badge.down {
+  background: rgba(239,68,68,0.2);
+  color: #fca5a5;
+}
+
+.status-badge.unknown {
+  background: rgba(148,163,184,0.25);
+  color: #cbd5e1;
+}
+
+/* EMPTY STATE */
+.empty-text {
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+
+/* HISTORY + STATS BOX */
+.stats-box {
+  background: rgba(148,163,184,0.15);
+  padding: 1rem 1.2rem;
+  border-radius: 0.75rem;
+  margin-bottom: 1rem;
+  color: #e2e8f0;
+  font-size: 0.9rem;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* ==== ALERT CONFIG PANEL ==== */
+
+.alert-config-panel {
+  margin-top: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.25rem;
+  border-radius: 0.9rem;
+  background: radial-gradient(circle at top left,
+    rgba(248,113,113,0.12),
+    rgba(15,23,42,0.95)
+  );
+  border: 1px solid rgba(248,113,113,0.35);
+}
+
+.alert-config-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #e2e8f0;
+}
+
+.alert-config-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.alert-config-grid .form-label {
+  font-size: 0.8rem;
+}
+
+.alert-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-bottom: 0.9rem;
+}
+
+/* inputs numéricos más elegantes y estrechos */
+.section .form-input[type="number"] {
+  max-width: 160px;
+}
+
+/* quitar flechitas de los number inputs */
+.form-input[type="number"]::-webkit-inner-spin-button,
+.form-input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.form-input[type="number"] {
+  -moz-appearance: textfield;
+}

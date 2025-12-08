@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: default
+  namespace: network-dashboard
+imagePullSecrets:
+  - name: registry-network-health-registry
