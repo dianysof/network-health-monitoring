@@ -14,6 +14,9 @@ This is an individual project; all design and implementation work described in t
 
 ## **VIDEO DEMO**
 
+**Please set quality to 1080 to ensure a good experience.**
+
+
 https://drive.google.com/file/d/1SCqtfTi-hlhAe5c5pBySAliIVe3MXnKo/view?usp=share_link
 
 ## **2. Motivation**
