@@ -12,6 +12,10 @@
 
 This is an individual project; all design and implementation work described in this report was completed by the single team member listed above.
 
+## **VIDEO DEMO**
+
+https://drive.google.com/file/d/1SCqtfTi-hlhAe5c5pBySAliIVe3MXnKo/view?usp=share_link
+
 ## **2. Motivation**
 
 **2.1 Problem Background**
